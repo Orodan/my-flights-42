@@ -1,0 +1,22 @@
+<div [class.selected]="selected()" class="card">
+  <div class="card-header">
+    <h2 class="title">{{ item().from }} - {{ item().to }}</h2>
+  </div>
+
+  <div class="card-body">
+    <p>Flight-No.: #{{ item().id }}</p>
+    <p>Date: {{ item().date | date }}</p>
+    <p>Delayed: {{ item().delayed }}</p>
+    <div>
+      @if (selected()) {
+        <button (click)="deselect()">Remove</button>
+      } @else {
+        <button (click)="select()">Select</button>
+      }
+
+      <ng-content>
+        <p>No additional information provided.</p>
+      </ng-content>
+    </div>
+  </div>
+</div>
