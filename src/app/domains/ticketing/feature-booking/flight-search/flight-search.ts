@@ -3,13 +3,14 @@ import { HttpClient, httpResource } from '@angular/common/http';
 import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { RouterLink } from '@angular/router';
 
 import { Flight } from '../../data/flight';
 import { FlightCard } from '../../ui/flight-card/flight-card';
 
 @Component({
   selector: 'app-flight-search',
-  imports: [FormField, JsonPipe, FlightCard],
+  imports: [FormField, JsonPipe, RouterLink, FlightCard],
   templateUrl: './flight-search.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
