@@ -1,7 +1,8 @@
 import { JsonPipe } from '@angular/common';
 import { HttpClient, httpResource } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 import { Flight } from '../../data/flight';
 import { FlightCard } from '../../ui/flight-card/flight-card';
@@ -14,6 +15,7 @@ import { FlightCard } from '../../ui/flight-card/flight-card';
 })
 export class FlightSearch {
   private readonly http = inject(HttpClient);
+  private readonly snackBar = inject(MatSnackBar);
 
   protected readonly filter = signal({
     from: 'Hamburg',
@@ -22,13 +24,19 @@ export class FlightSearch {
   protected readonly filterForm = form(this.filter);
 
   protected readonly flightsResource = httpResource<Flight[]>(
-    () => ({
-      url: 'https://demo.angulararchitects.io/api/flight',
-      params: {
-        from: this.filter().from,
-        to: this.filter().to,
-      },
-    }),
+    () => {
+      if (!this.filter().from || !this.filter().to) {
+        return undefined;
+      }
+
+      return {
+        url: 'https://demo.angulararchitects.io/api/flight',
+        params: {
+          from: this.filter().from,
+          to: this.filter().to,
+        },
+      };
+    },
     { defaultValue: [] },
   );
 
@@ -42,6 +50,16 @@ export class FlightSearch {
     3: true,
     5: true,
   });
+
+  constructor() {
+    effect(() => {
+      if (this.error() || this.filter().to === 'error') {
+        const message = 'Error loading flights: ' + this.error()?.message;
+
+        this.snackBar.open(message, 'OK');
+      }
+    });
+  }
 
   protected search(): void {
     this.flightsResource.reload();

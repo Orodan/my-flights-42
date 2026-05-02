@@ -26,16 +26,10 @@
           [item]="flight"
           [selected]="basket()[flight.id]"
           (selectedChange)="updateBasket(flight.id, $event)"
-        >
-          <div>The flight #{{ flight.id }} might be delayed. Please check the monitors.</div>
-        </app-flight-card>
+        />
       </div>
     }
   </div>
-}
-
-@if (error()) {
-  <div>Error: {{ error() | json }}</div>
 }
 
 @if (isLoading()) {
