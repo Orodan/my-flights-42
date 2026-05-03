@@ -1,7 +1,7 @@
 import { httpResource, HttpResourceRef } from '@angular/common/http';
 import { Injectable, Signal } from '@angular/core';
 
-import { Flight } from './flight';
+import { Flight, initialFlight } from './flight';
 
 @Injectable({
   providedIn: 'root',
@@ -28,6 +28,23 @@ export class FlightClient {
         };
       },
       { defaultValue: [] },
+    );
+  }
+
+  findResourceById(id: Signal<number>): HttpResourceRef<Flight> {
+    return httpResource<Flight>(
+      () => ({
+        url: `${this.baseUrl}/flight`,
+        headers: {
+          Accept: 'application/json',
+        },
+        params: {
+          id: id(),
+        },
+      }),
+      {
+        defaultValue: initialFlight,
+      },
     );
   }
 }

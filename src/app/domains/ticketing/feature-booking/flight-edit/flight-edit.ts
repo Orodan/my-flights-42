@@ -5,9 +5,12 @@ import {
   effect,
   inject,
   input,
-  numberAttribute,
+  linkedSignal,
 } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+
+import { FlightDetailStore } from './flight-detail-store';
+import { form, minLength, required } from '@angular/forms/signals';
 
 @Component({
   selector: 'app-flight-edit',
@@ -16,15 +19,32 @@ import { ActivatedRoute } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FlightEdit {
-  private readonly router = inject(ActivatedRoute);
+  private readonly route = inject(ActivatedRoute);
+  private readonly store = inject(FlightDetailStore);
 
-  protected readonly id = input.required({ transform: numberAttribute });
   protected readonly showDetails = input({ transform: booleanAttribute });
 
+  protected readonly flight = linkedSignal(() => this.store.flight());
+
+  protected readonly flightForm = form(this.flight, (path) => {
+    required(path.from);
+    minLength(path.from, 3);
+
+    required(path.to);
+    minLength(path.to, 3);
+
+    required(path.date);
+  });
+
   constructor() {
+    this.route.paramMap.subscribe((paramMap) => {
+      const flightId = parseInt(paramMap.get('id') ?? '0');
+
+      this.store.setFlightId(flightId);
+    });
+
     effect(() => {
-      console.log('id ', this.id());
-      console.log('showDetails ', this.showDetails());
+      console.log('flight: ', this.flight());
     });
   }
 }

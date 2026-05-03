@@ -27,7 +27,7 @@
           [selected]="basket()[flight.id]"
           (selectedChange)="updateBasket(flight.id, $event)"
         >
-          <button [routerLink]="['/flight-edit', flight.id, { showDetails: true }]">Edit</button>
+          <button [routerLink]="['../flight-edit', flight.id, { showDetails: true }]">Edit</button>
         </app-flight-card>
       </div>
     }
