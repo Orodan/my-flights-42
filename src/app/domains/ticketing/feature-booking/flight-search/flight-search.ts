@@ -1,12 +1,11 @@
 import { JsonPipe } from '@angular/common';
-import { HttpClient, httpResource } from '@angular/common/http';
-import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, linkedSignal, signal } from '@angular/core';
 import { form, FormField } from '@angular/forms/signals';
-import { MatSnackBar } from '@angular/material/snack-bar';
 import { RouterLink } from '@angular/router';
 
 import { Flight } from '../../data/flight';
 import { FlightCard } from '../../ui/flight-card/flight-card';
+import { FlightStore } from './flight-store';
 
 @Component({
   selector: 'app-flight-search',
@@ -15,55 +14,24 @@ import { FlightCard } from '../../ui/flight-card/flight-card';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class FlightSearch {
-  private readonly http = inject(HttpClient);
-  private readonly snackBar = inject(MatSnackBar);
+  private readonly store = inject(FlightStore);
 
-  protected readonly filter = signal({
-    from: 'Hamburg',
-    to: 'Graz',
-  });
+  protected readonly filter = linkedSignal(() => ({
+    from: this.store.from(),
+    to: this.store.to(),
+  }));
   protected readonly filterForm = form(this.filter);
 
-  protected readonly flightsResource = httpResource<Flight[]>(
-    () => {
-      if (!this.filter().from || !this.filter().to) {
-        return undefined;
-      }
-
-      return {
-        url: 'https://demo.angulararchitects.io/api/flight',
-        params: {
-          from: this.filter().from,
-          to: this.filter().to,
-        },
-      };
-    },
-    { defaultValue: [] },
-  );
-
-  protected readonly flights = this.flightsResource.value;
-  protected readonly error = this.flightsResource.error;
-  protected readonly isLoading = this.flightsResource.isLoading;
+  protected readonly flights = this.store.flights;
+  protected readonly error = this.store.flightsError;
+  protected readonly isLoading = this.store.flightsIsLoading;
 
   protected readonly selectedFlight = signal<Flight | null>(null);
 
-  protected readonly basket = signal<Record<number, boolean>>({
-    3: true,
-    5: true,
-  });
-
-  constructor() {
-    effect(() => {
-      if (this.error() || this.filter().to === 'error') {
-        const message = 'Error loading flights: ' + this.error()?.message;
-
-        this.snackBar.open(message, 'OK');
-      }
-    });
-  }
+  protected readonly basket = this.store.basket;
 
   protected search(): void {
-    this.flightsResource.reload();
+    this.store.updateFilter(this.filter().from, this.filter().to);
   }
 
   protected select(flight: Flight): void {
@@ -71,9 +39,6 @@ export class FlightSearch {
   }
 
   protected updateBasket(flightId: number, selected: boolean): void {
-    this.basket.update((basket) => ({
-      ...basket,
-      [flightId]: selected,
-    }));
+    this.store.updateBasket(flightId, selected);
   }
 }
