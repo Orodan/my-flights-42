@@ -1,6 +1,9 @@
 import { inject, Injectable, signal } from '@angular/core';
 
+import { firstValueFrom } from 'rxjs';
+
 import { FlightClient } from '../../data/flight-client';
+import { Flight } from '../../data/flight';
 
 @Injectable({
   providedIn: 'root',
@@ -22,5 +25,9 @@ export class FlightDetailStore {
 
   setFlightId(id: number): void {
     this._flightId.set(id);
+  }
+
+  saveFlight(flight: Flight): Promise<Flight> {
+    return firstValueFrom(this.flightClient.update(flight));
   }
 }

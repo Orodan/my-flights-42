@@ -1,1 +1,21 @@
-<h1>Flight edit</h1>
+<form [formRoot]="flightForm">
+  <fieldset>
+    <legend>Flight</legend>
+
+    <div class="form-group">
+      <label for="flight-id">ID</label>
+      <input class="form-control" type="number" id="flight-id" [formField]="flightForm.id" />
+    </div>
+
+    <div class="form-group">
+      <label for="flight-from">From</label>
+      <input class="form-control" type="text" id="flight-from" [formField]="flightForm.from" />
+    </div>
+
+    <div>
+      <button>Save</button>
+    </div>
+
+    <p>{{ flightForm().errorSummary() | json }}</p>
+  </fieldset>
+</form>

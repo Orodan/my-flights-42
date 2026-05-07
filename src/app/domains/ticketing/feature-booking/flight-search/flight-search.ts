@@ -1,11 +1,13 @@
 import { JsonPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, linkedSignal, signal } from '@angular/core';
-import { form, FormField } from '@angular/forms/signals';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { debounce, form, FormField, minLength, required } from '@angular/forms/signals';
 import { RouterLink } from '@angular/router';
 
 import { Flight } from '../../data/flight';
 import { FlightCard } from '../../ui/flight-card/flight-card';
 import { FlightStore } from './flight-store';
+import { filter } from 'rxjs';
 
 @Component({
   selector: 'app-flight-search',
@@ -20,7 +22,24 @@ export class FlightSearch {
     from: this.store.from(),
     to: this.store.to(),
   }));
-  protected readonly filterForm = form(this.filter);
+  protected readonly filterForm = form(this.filter, (path) => {
+    debounce(path, 300);
+
+    required(path.from);
+    minLength(path.from, 3);
+
+    required(path.to);
+    minLength(path.to, 3);
+  });
+
+  constructor() {
+    toObservable(this.filter)
+      .pipe(
+        filter(() => this.filterForm().valid()),
+        takeUntilDestroyed(),
+      )
+      .subscribe(() => this.search());
+  }
 
   protected readonly flights = this.store.flights;
   protected readonly error = this.store.flightsError;

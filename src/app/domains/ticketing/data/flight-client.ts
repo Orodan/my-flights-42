@@ -1,5 +1,7 @@
-import { httpResource, HttpResourceRef } from '@angular/common/http';
-import { Injectable, Signal } from '@angular/core';
+import { HttpClient, httpResource, HttpResourceRef } from '@angular/common/http';
+import { inject, Injectable, Signal } from '@angular/core';
+
+import { Observable } from 'rxjs';
 
 import { Flight, initialFlight } from './flight';
 
@@ -7,6 +9,8 @@ import { Flight, initialFlight } from './flight';
   providedIn: 'root',
 })
 export class FlightClient {
+  private readonly http = inject(HttpClient);
+
   private readonly baseUrl = 'https://demo.angulararchitects.io/api';
 
   findResource(from: Signal<string>, to: Signal<string>): HttpResourceRef<Flight[]> {
@@ -46,5 +50,14 @@ export class FlightClient {
         defaultValue: initialFlight,
       },
     );
+  }
+
+  update(flight: Flight): Observable<Flight> {
+    const url = `${this.baseUrl}/flight/${flight.id}`;
+    const headers = {
+      Accept: 'application/json',
+    };
+
+    return this.http.put<Flight>(url, flight, { headers });
   }
 }
